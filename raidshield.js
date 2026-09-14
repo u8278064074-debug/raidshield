@@ -27,6 +27,9 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = path.join(__dirname, "raidshield-config.json");
 
+const WELCOME_CHANNEL_ID = "1548883819254517780"; // salon de bienvenue
+const CITIZEN_ROLE_ID = "1548792320260972564"; // rôle 👥 Citoyen (auto-attribué aux nouveaux)
+
 /* ------------------------------------------------------------------ */
 /*  Configuration par défaut (chaque serveur peut la modifier)         */
 /* ------------------------------------------------------------------ */
@@ -523,6 +526,38 @@ async function onKickDetected(member) {
   if (executor && !isStaff(executor)) await punish(await guild.members.fetch(executor.id).catch(() => null), config.punishments.nuke, "Kicks en masse");
 }
 
+async function greetNewMember(member) {
+  const guild = member.guild;
+  const config = configOf(guild.id);
+  if (!config.enabled || config.lockdown || config.raidMode) return;
+
+  // Auto-attribution du rôle Citoyen
+  try {
+    const role = guild.roles.cache.get(CITIZEN_ROLE_ID);
+    if (role && !member.roles.cache.has(role.id)) {
+      await member.roles.add(role.id, "RaidShield — rôle Citoyen de bienvenue");
+    }
+  } catch { /* permissions insuffisantes */ }
+
+  // Message de bienvenue
+  try {
+    const channel = guild.channels.cache.get(WELCOME_CHANNEL_ID);
+    if (!channel || !channel.isTextBased()) return;
+    const embed = new EmbedBuilder()
+      .setTitle("🎉 Bienvenue sur EASY TUNING !")
+      .setDescription(
+        `Bienvenue **${member.user.username}** sur le serveur ! 🚗💨\n\n` +
+        `Rôle **👥 Citoyen** attribué automatiquement.` +
+        `\nPasse nous dire bonjour, explore les salons et bon jeu à toi !`
+      )
+      .setColor(0x2ecc71)
+      .setThumbnail(member.user.displayAvatarURL({ size: 512 }))
+      .setFooter({ text: "EASY TUNING" })
+      .setTimestamp();
+    await channel.send({ content: `${member}`, embeds: [embed] });
+  } catch { /* salon indisponible */ }
+}
+
 async function onMemberAdd(member) {
   const guild = member.guild;
   const config = configOf(guild.id);
@@ -574,6 +609,8 @@ async function onMemberAdd(member) {
     }
     if (!config.raidMode) await enableRaidMode(guild, `Rafle de nouveaux membres (${joinCount})`);
   }
+
+  await greetNewMember(member);
 }
 
 async function onMemberUpdate(oldMember, newMember) {
