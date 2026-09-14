@@ -1282,12 +1282,21 @@ if (process.env.TEST_SLASH === "1") {
 
 bootDiag.loginCalledAt = Math.floor(process.uptime());
 try {
-  if (typeof client.ws?.setGateway === "function" && !client.ws.gateway?.url) {
-    client.ws.setGateway({ url: "wss://gateway.discord.gg", shards: 1, total: 1 });
-    console.log("[RaidShield] Passerelle Discord injectee (contournement API REST).");
-  }
+  const restGet = client.rest.get.bind(client.rest);
+  client.rest.get = (...args) => {
+    const route = String(args[0] ?? "");
+    if ((route.endsWith("/gateway/bot") || route.endsWith("/gateway")) && !client.options?.ws?.url) {
+      return Promise.resolve({
+        url: "wss://gateway.discord.gg",
+        shards: 1,
+        session_start_limit: { total: 1000, remaining: 1000, reset_after: 1, max_concurrency: 1 },
+      });
+    }
+    return restGet(...args);
+  };
+  console.log("[RaidShield] Passerelle Discord injectee hors API REST.");
 } catch (e) {
-  console.error("[RaidShield] setGateway:", e?.message || e);
+  console.error("[RaidShield] patch gateway:", e?.message || e);
 }
 client.login(getToken()).catch((err) => {
   const msg = String(err?.message || err || "");
