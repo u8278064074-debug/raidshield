@@ -1,9 +1,9 @@
-/**
- * ─────────────────────────────────────────────────────────────
- *  ⚔️ RAID SHIELD — Bot anti-raid premium pour Discord
- *  Protection complète : anti-nuke, anti-spam, anti-massjoin,
- *  protection des rôles, journalisation, mode RAID & lockdown.
- * ─────────────────────────────────────────────────────────────
+﻿/**
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ *  âš”ï¸ RAID SHIELD â€” Bot anti-raid premium pour Discord
+ *  Protection complÃ¨te : anti-nuke, anti-spam, anti-massjoin,
+ *  protection des rÃ´les, journalisation, mode RAID & lockdown.
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 
 import "dotenv/config";
@@ -28,53 +28,53 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = path.join(__dirname, "raidshield-config.json");
 
 const WELCOME_CHANNEL_ID = "1548883819254517780"; // salon de bienvenue
-const CITIZEN_ROLE_ID = "1548792320260972564"; // rôle 👥 Citoyen (auto-attribué aux nouveaux)
-const REVIEW_CHANNEL_ID = "1548887315865149460"; // ⭐-avis (les /avis y sont postés)
+const CITIZEN_ROLE_ID = "1548792320260972564"; // rÃ´le ðŸ‘¥ Citoyen (auto-attribuÃ© aux nouveaux)
+const REVIEW_CHANNEL_ID = "1548887315865149460"; // â­-avis (les /avis y sont postÃ©s)
 const avisCooldowns = new Map(); // userId -> timestamp du dernier /avis
 
 /* ------------------------------------------------------------------ */
-/*  Configuration par défaut (chaque serveur peut la modifier)         */
+/*  Configuration par dÃ©faut (chaque serveur peut la modifier)         */
 /* ------------------------------------------------------------------ */
 
 const DEFAULT_CONFIG = {
   enabled: true,
   logChannel: null, // ID du salon de logs
-  quarantineRole: null, // rôle de quarantaine (optionnel)
+  quarantineRole: null, // rÃ´le de quarantaine (optionnel)
   lockdown: false,
   lockdownUntil: null,
   raidMode: false,
   raidModeUntil: null,
   thresholds: {
-    channelCreate: 4, // créations de salons en 10s → raid
-    channelDelete: 4, // suppressions de salons en 10s → raid
-    roleCreate: 3, // créations de rôles en 10s → raid
-    roleDelete: 3, // suppressions de rôles en 10s → raid
-    ban: 3, // bans en 10s → raid
-    kick: 4, // kicks en 10s → raid
-    spam: 5, // messages en 5s → avertissement anti-spam
-    duplicate: 3, // messages identiques en 5s → anti-dup
-    joinRush: 6, // arrivées en 10s → raid join
-    botAdd: 2, // bots ajoutés en 30s → raid bots
-    newAccountDays: 3, // comptes plus jeunes que ça = suspect
-    actionWindow: 10_000, // fenêtre de détection (ms)
+    channelCreate: 4, // crÃ©ations de salons en 10s â†’ raid
+    channelDelete: 4, // suppressions de salons en 10s â†’ raid
+    roleCreate: 3, // crÃ©ations de rÃ´les en 10s â†’ raid
+    roleDelete: 3, // suppressions de rÃ´les en 10s â†’ raid
+    ban: 3, // bans en 10s â†’ raid
+    kick: 4, // kicks en 10s â†’ raid
+    spam: 5, // messages en 5s â†’ avertissement anti-spam
+    duplicate: 3, // messages identiques en 5s â†’ anti-dup
+    joinRush: 6, // arrivÃ©es en 10s â†’ raid join
+    botAdd: 2, // bots ajoutÃ©s en 30s â†’ raid bots
+    newAccountDays: 3, // comptes plus jeunes que Ã§a = suspect
+    actionWindow: 10_000, // fenÃªtre de dÃ©tection (ms)
   },
   punishments: {
     default: "timeout", // timeout | kick | ban
     timeoutMinutes: 60,
-    nuke: "ban", // punition pour destruction de salons/rôles/bans massifs
+    nuke: "ban", // punition pour destruction de salons/rÃ´les/bans massifs
   },
   spam: {
     invites: true, // bloquer les invitations Discord dans les messages
     everyone: true, // bloquer @everyone / @here
-    maxMentions: 4, // mentions autorisées par message (non-everyone)
+    maxMentions: 4, // mentions autorisÃ©es par message (non-everyone)
   },
   whitelistUsers: [], // jamais punis
-  whitelistRoles: [], // membres avec ce rôle = jamais punis
-  protectedRoles: [], // rôles protégés : toute modification non staff = rollback
+  whitelistRoles: [], // membres avec ce rÃ´le = jamais punis
+  protectedRoles: [], // rÃ´les protÃ©gÃ©s : toute modification non staff = rollback
 };
 
 /* ------------------------------------------------------------------ */
-/*  État en mémoire                                                    */
+/*  Ã‰tat en mÃ©moire                                                    */
 /* ------------------------------------------------------------------ */
 
 const states = new Map(); // guildId -> { windows, spam, lockdownTimers }
@@ -99,7 +99,7 @@ function stateOf(guildId) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Configuration (persistée dans raidshield-config.json)              */
+/*  Configuration (persistÃ©e dans raidshield-config.json)              */
 /* ------------------------------------------------------------------ */
 
 const guildConfigs = new Map();
@@ -179,23 +179,23 @@ async function getAuditExecutor(guild, type, withinMs = 12_000) {
 }
 
 const CAN_PUNISH_NAMES = {
-  ban: async (m) => (m.bannable ? m.ban({ reason: "RaidShield — raid détecté | " + (m._reason || "") }).catch(() => null) : null),
-  kick: async (m) => (m.kickable ? m.kick("RaidShield — raid détecté | " + (m._reason || "")).catch(() => null) : null),
-  timeout: (m) => (m.moderatable ? m.timeout((m._minutes || 60) * 60_000, "RaidShield — raid détecté | " + (m._reason || "")).catch(() => null) : null),
+  ban: async (m) => (m.bannable ? m.ban({ reason: "RaidShield â€” raid dÃ©tectÃ© | " + (m._reason || "") }).catch(() => null) : null),
+  kick: async (m) => (m.kickable ? m.kick("RaidShield â€” raid dÃ©tectÃ© | " + (m._reason || "")).catch(() => null) : null),
+  timeout: (m) => (m.moderatable ? m.timeout((m._minutes || 60) * 60_000, "RaidShield â€” raid dÃ©tectÃ© | " + (m._reason || "")).catch(() => null) : null),
 };
 
 async function punish(member, level, reason, minutes = 60) {
   if (!member || !member.id) return false;
   const config = configOf(member.guild.id);
   if (isStaff(member) || isWhitelisted(member, config)) {
-    await punishLog(member.guild, `⚠️ Tentative non punie`, `${member.user.tag} (${member.id}) — ${reason} (staff / whitelisté)`);
+    await punishLog(member.guild, `âš ï¸ Tentative non punie`, `${member.user.tag} (${member.id}) â€” ${reason} (staff / whitelistÃ©)`);
     return false;
   }
   member._reason = reason;
   member._minutes = minutes;
   const fn = CAN_PUNISH_NAMES[level] || CAN_PUNISH_NAMES.timeout;
   await fn(member);
-  await punishLog(member.guild, level.toUpperCase(), `${member.user?.tag || member.id} — ${reason}`, level === "ban" ? 0xdb2a2a : level === "kick" ? 0xe8590c : 0xf2c053);
+  await punishLog(member.guild, level.toUpperCase(), `${member.user?.tag || member.id} â€” ${reason}`, level === "ban" ? 0xdb2a2a : level === "kick" ? 0xe8590c : 0xf2c053);
   return true;
 }
 
@@ -248,8 +248,8 @@ function enableRaidMode(guild, reason, minutes = 30) {
   saveConfigs();
   return logAlert(
     guild,
-    "🚨 MODE RAID ACTIVÉ",
-    `**${reason}**\nLe serveur est en état d'alerte pendant **${minutes} min** :\n• Tout nouveau membre sera mis en timeout immédiatement\n• Toute création/suppression de salon et de rôle sera annulée\n• Toute punition est appliquée automatiquement\nUtilise **/raid unlock** manuellement si nécessaire.`,
+    "ðŸš¨ MODE RAID ACTIVÃ‰",
+    `**${reason}**\nLe serveur est en Ã©tat d'alerte pendant **${minutes} min** :\nâ€¢ Tout nouveau membre sera mis en timeout immÃ©diatement\nâ€¢ Toute crÃ©ation/suppression de salon et de rÃ´le sera annulÃ©e\nâ€¢ Toute punition est appliquÃ©e automatiquement\nUtilise **/raid unlock** manuellement si nÃ©cessaire.`,
     0xdb2a2a
   );
 }
@@ -261,7 +261,7 @@ function disableRaidMode(guild) {
   config.lockdown = false;
   config.lockdownUntil = null;
   saveConfigs();
-  return log(guild, "✅ SÉCURITÉ RÉTABLIE", "Le mode raid est désactivé. Les mesures automatiques sont levées.", 0x2ecc71);
+  return log(guild, "âœ… SÃ‰CURITÃ‰ RÃ‰TABLIE", "Le mode raid est dÃ©sactivÃ©. Les mesures automatiques sont levÃ©es.", 0x2ecc71);
 }
 
 function setLockdown(guild, minutes = 60, enable = true) {
@@ -276,9 +276,9 @@ function setLockdown(guild, minutes = 60, enable = true) {
   saveConfigs();
   return log(
     guild,
-    enable ? "🔒 LOCKDOWN ACTIVÉ" : "🔓 LOCKDOWN DÉSACTIVÉ",
+    enable ? "ðŸ”’ LOCKDOWN ACTIVÃ‰" : "ðŸ”“ LOCKDOWN DÃ‰SACTIVÃ‰",
     enable
-      ? `Tout nouveau membre sera mis en timeout pendant **${minutes} min** jusqu'à <t:${Math.floor(config.lockdownUntil / 1000)}:R>.`
+      ? `Tout nouveau membre sera mis en timeout pendant **${minutes} min** jusqu'Ã  <t:${Math.floor(config.lockdownUntil / 1000)}:R>.`
       : "Les nouveaux membres peuvent rejoindre normalement.",
     enable ? 0xe67e22 : 0x2ecc71
   );
@@ -303,28 +303,28 @@ async function onChannelCreate(channel) {
   const executor = await getAuditExecutor(guild, AuditLogEvent.ChannelCreate);
   if (isStaff(executor) && !config.raidMode) return;
 
-  // Rollback : supprime les salons créés en rafale
+  // Rollback : supprime les salons crÃ©Ã©s en rafale
   let rolledBack = 0;
   for (const c of guild.channels.cache.filter((ch) => ch.id !== channel.id && now() - ch.createdTimestamp < 30_000)) {
     if (rolledBack >= 10) break;
     if (c.deletable) {
-      await c.delete("RaidShield — suppression salons créés pendant le raid").catch(() => null);
+      await c.delete("RaidShield â€” suppression salons crÃ©Ã©s pendant le raid").catch(() => null);
       rolledBack++;
     }
   }
   if (channel.deletable) {
-    await channel.delete("RaidShield — salon créé pendant un raid").catch(() => null);
+    await channel.delete("RaidShield â€” salon crÃ©Ã© pendant un raid").catch(() => null);
     rolledBack++;
   }
 
   await logAlert(
     guild,
-    "🚧 SALONS CRÉÉS EN MASSE",
-    `**${count} salons** créés en ${config.thresholds.actionWindow / 1000}s → **${rolledBack} annulé(s)**, fautif : ${executor ?? "inconnu"} (<@${channel.id}>)`,
+    "ðŸš§ SALONS CRÃ‰Ã‰S EN MASSE",
+    `**${count} salons** crÃ©Ã©s en ${config.thresholds.actionWindow / 1000}s â†’ **${rolledBack} annulÃ©(s)**, fautif : ${executor ?? "inconnu"} (<@${channel.id}>)`,
     0xdb2a2a
   );
-  if (!config.raidMode) await enableRaidMode(guild, `Création en masse de salons (${count} en ${config.thresholds.actionWindow / 1000}s)`);
-  if (executor && !isStaff(executor)) await punish(await guild.members.fetch(executor.id).catch(() => null), config.punishments.nuke, "Création en masse de salons");
+  if (!config.raidMode) await enableRaidMode(guild, `CrÃ©ation en masse de salons (${count} en ${config.thresholds.actionWindow / 1000}s)`);
+  if (executor && !isStaff(executor)) await punish(await guild.members.fetch(executor.id).catch(() => null), config.punishments.nuke, "CrÃ©ation en masse de salons");
 }
 
 async function onChannelDelete(channel) {
@@ -343,7 +343,7 @@ async function onChannelDelete(channel) {
   const isNuke = config.raidMode || count >= config.thresholds.channelDelete;
   if (!isNuke) return;
 
-  // Rollback : recrée le canal supprimé
+  // Rollback : recrÃ©e le canal supprimÃ©
   try {
     await guild.channels.create({
       name: channel.name,
@@ -351,14 +351,14 @@ async function onChannelDelete(channel) {
         ? channel.type
         : ChannelType.GuildText,
       parent: channel.parentId ?? undefined,
-      reason: "RaidShield — restauration du salon supprimé",
+      reason: "RaidShield â€” restauration du salon supprimÃ©",
     });
   } catch { /* permis manquants */ }
 
   await logAlert(
     guild,
-    "💥 SALONS SUPPRIMÉS EN MASSE",
-    `**${count} suppressions** détectées → salon restauré, fautif : ${executor ?? "inconnu"}`,
+    "ðŸ’¥ SALONS SUPPRIMÃ‰S EN MASSE",
+    `**${count} suppressions** dÃ©tectÃ©es â†’ salon restaurÃ©, fautif : ${executor ?? "inconnu"}`,
     0xdb2a2a
   );
   if (!config.raidMode) await enableRaidMode(guild, `Suppressions en masse de salons (${count})`);
@@ -382,17 +382,17 @@ async function onRoleCreate(role) {
   if (!isNuke) return;
 
   if (role.editable) {
-    await role.delete("RaidShield — rôle créé pendant un raid").catch(() => null);
+    await role.delete("RaidShield â€” rÃ´le crÃ©Ã© pendant un raid").catch(() => null);
   }
 
   await logAlert(
     guild,
-    "🎭 RÔLES CRÉÉS EN MASSE",
-    `**${count} rôles** créés → supprimés, fautif : ${executor ?? "inconnu"}`,
+    "ðŸŽ­ RÃ”LES CRÃ‰Ã‰S EN MASSE",
+    `**${count} rÃ´les** crÃ©Ã©s â†’ supprimÃ©s, fautif : ${executor ?? "inconnu"}`,
     0xdb2a2a
   );
-  if (!config.raidMode) await enableRaidMode(guild, `Création en masse de rôles (${count})`);
-  if (executor && !isStaff(executor)) await punish(await guild.members.fetch(executor.id).catch(() => null), config.punishments.nuke, "Création en masse de rôles");
+  if (!config.raidMode) await enableRaidMode(guild, `CrÃ©ation en masse de rÃ´les (${count})`);
+  if (executor && !isStaff(executor)) await punish(await guild.members.fetch(executor.id).catch(() => null), config.punishments.nuke, "CrÃ©ation en masse de rÃ´les");
 }
 
 async function onRoleDelete(role) {
@@ -426,18 +426,18 @@ async function onRoleDelete(role) {
       hoist: snapshot.hoist,
       mentionable: snapshot.mentionable,
       permissions: snapshot.permissions,
-      reason: "RaidShield — restauration du rôle supprimé",
+      reason: "RaidShield â€” restauration du rÃ´le supprimÃ©",
     });
   } catch { /* permis manquants */ }
 
   await logAlert(
     guild,
-    "💥 RÔLES SUPPRIMÉS EN MASSE",
-    `**${count} suppressions** détectées → rôle **${role.name}** restauré, fautif : ${executor ?? "inconnu"}`,
+    "ðŸ’¥ RÃ”LES SUPPRIMÃ‰S EN MASSE",
+    `**${count} suppressions** dÃ©tectÃ©es â†’ rÃ´le **${role.name}** restaurÃ©, fautif : ${executor ?? "inconnu"}`,
     0xdb2a2a
   );
-  if (!config.raidMode) await enableRaidMode(guild, `Suppressions en masse de rôles (${count})`);
-  if (executor && !isStaff(executor)) await punish(await guild.members.fetch(executor.id).catch(() => null), config.punishments.nuke, "Suppression en masse de rôles");
+  if (!config.raidMode) await enableRaidMode(guild, `Suppressions en masse de rÃ´les (${count})`);
+  if (executor && !isStaff(executor)) await punish(await guild.members.fetch(executor.id).catch(() => null), config.punishments.nuke, "Suppression en masse de rÃ´les");
 }
 
 function roleNeedsProtection(role, config) {
@@ -454,7 +454,7 @@ async function onRoleUpdate(oldRole, newRole) {
   if (!config.enabled) return;
 
   const executor = await getAuditExecutor(guild, AuditLogEvent.RoleUpdate);
-  if (executor?.id === client.user?.id) return; // le bot agit lui-même
+  if (executor?.id === client.user?.id) return; // le bot agit lui-mÃªme
   if (isStaff(executor)) return;
 
   const permChanged = oldRole.permissions.bitfield !== newRole.permissions.bitfield;
@@ -462,14 +462,14 @@ async function onRoleUpdate(oldRole, newRole) {
 
   if (permChanged && roleIsProtected) {
     // Rollback des permissions
-    await newRole.setPermissions(oldRole.permissions.bitfield, "RaidShield — restauration des permissions").catch(() => null);
+    await newRole.setPermissions(oldRole.permissions.bitfield, "RaidShield â€” restauration des permissions").catch(() => null);
     await logAlert(
       guild,
-      "🛡️ PERMISSIONS MODIFIÉES",
-      `Le rôle **${newRole.name}** a reçu des permissions sensibles → **annulé**, fautif : ${executor ?? "inconnu"}`,
+      "ðŸ›¡ï¸ PERMISSIONS MODIFIÃ‰ES",
+      `Le rÃ´le **${newRole.name}** a reÃ§u des permissions sensibles â†’ **annulÃ©**, fautif : ${executor ?? "inconnu"}`,
       0xdb2a2a
     );
-    if (executor) await punish(await guild.members.fetch(executor.id).catch(() => null), config.punishments.nuke, "Modification des permissions d'un rôle sensible");
+    if (executor) await punish(await guild.members.fetch(executor.id).catch(() => null), config.punishments.nuke, "Modification des permissions d'un rÃ´le sensible");
   }
 }
 
@@ -490,13 +490,13 @@ async function onBanAdd(ban) {
 
   // Unban des victimes
   try {
-    await guild.members.unban(ban.user.id, "RaidShield — ban de masse annulé").catch(() => null);
+    await guild.members.unban(ban.user.id, "RaidShield â€” ban de masse annulÃ©").catch(() => null);
   } catch { /* pas le droit de unban */ }
 
   await logAlert(
     guild,
-    "⛔ BANS EN MASSE",
-    `**${count} bans** détectés → annulés et membres restaurés, fautif : ${executor ?? "inconnu"}`,
+    "â›” BANS EN MASSE",
+    `**${count} bans** dÃ©tectÃ©s â†’ annulÃ©s et membres restaurÃ©s, fautif : ${executor ?? "inconnu"}`,
     0xdb2a2a
   );
   if (!config.raidMode) await enableRaidMode(guild, `Bans en masse (${count})`);
@@ -520,8 +520,8 @@ async function onKickDetected(member) {
 
   await logAlert(
     guild,
-    "👢 KICKS EN MASSE",
-    `**${count} kicks** détectés → alerte, fautif : ${executor ?? "inconnu"}`,
+    "ðŸ‘¢ KICKS EN MASSE",
+    `**${count} kicks** dÃ©tectÃ©s â†’ alerte, fautif : ${executor ?? "inconnu"}`,
     0xe8590c
   );
   if (!config.raidMode) await enableRaidMode(guild, `Kicks en masse (${count})`);
@@ -533,11 +533,11 @@ async function greetNewMember(member) {
   const config = configOf(guild.id);
   if (!config.enabled || config.lockdown || config.raidMode) return;
 
-  // Auto-attribution du rôle Citoyen
+  // Auto-attribution du rÃ´le Citoyen
   try {
     const role = guild.roles.cache.get(CITIZEN_ROLE_ID);
     if (role && !member.roles.cache.has(role.id)) {
-      await member.roles.add(role.id, "RaidShield — rôle Citoyen de bienvenue");
+      await member.roles.add(role.id, "RaidShield â€” rÃ´le Citoyen de bienvenue");
     }
   } catch { /* permissions insuffisantes */ }
 
@@ -546,11 +546,11 @@ async function greetNewMember(member) {
     const channel = guild.channels.cache.get(WELCOME_CHANNEL_ID);
     if (!channel || !channel.isTextBased()) return;
     const embed = new EmbedBuilder()
-      .setTitle("🎉 Bienvenue sur EASY TUNING !")
+      .setTitle("ðŸŽ‰ Bienvenue sur EASY TUNING !")
       .setDescription(
-        `Bienvenue **${member.user.username}** sur le serveur ! 🚗💨\n\n` +
-        `Rôle **👥 Citoyen** attribué automatiquement.` +
-        `\nPasse nous dire bonjour, explore les salons et bon jeu à toi !`
+        `Bienvenue **${member.user.username}** sur le serveur ! ðŸš—ðŸ’¨\n\n` +
+        `RÃ´le **ðŸ‘¥ Citoyen** attribuÃ© automatiquement.` +
+        `\nPasse nous dire bonjour, explore les salons et bon jeu Ã  toi !`
       )
       .setColor(0x2ecc71)
       .setThumbnail(member.user.displayAvatarURL({ size: 512 }))
@@ -574,11 +574,11 @@ async function onMemberAdd(member) {
       const executor = await getAuditExecutor(guild, AuditLogEvent.BotAdd, 30_000);
       await logAlert(
         guild,
-        "🤖 BOTS AJOUTÉS",
-        `**${count} bots** ajoutés en 30s → bots retirés, fautif : ${executor ?? "inconnu"}`,
+        "ðŸ¤– BOTS AJOUTÃ‰S",
+        `**${count} bots** ajoutÃ©s en 30s â†’ bots retirÃ©s, fautif : ${executor ?? "inconnu"}`,
         0xdb2a2a
       );
-      if (member.kickable) await member.kick("RaidShield — ajout en masse de bots");
+      if (member.kickable) await member.kick("RaidShield â€” ajout en masse de bots");
       if (executor && !isStaff(executor)) await punish(await guild.members.fetch(executor.id).catch(() => null), config.punishments.nuke, "Ajout en masse de bots");
       if (!config.raidMode) await enableRaidMode(guild, `Ajout en masse de bots (${count})`);
     }
@@ -589,11 +589,11 @@ async function onMemberAdd(member) {
   st.windows.join.push(now());
   const joinCount = st.windows.join.length;
 
-  // Lockdown / raid mode → timeout immédiat du nouvel arrivant
+  // Lockdown / raid mode â†’ timeout immÃ©diat du nouvel arrivant
   if (config.lockdown || config.raidMode) {
     const minutes = config.punishments.timeoutMinutes;
-    await member.timeout(minutes * 60_000, "RaidShield — lockdown actif").catch(() => null);
-    await log(guild, "🔒 NOUVEL ARRIVANT VERROUILLÉ", `${member.user.tag} rejoint pendant le lockdown → timeout ${minutes} min`, 0xe67e22);
+    await member.timeout(minutes * 60_000, "RaidShield â€” lockdown actif").catch(() => null);
+    await log(guild, "ðŸ”’ NOUVEL ARRIVANT VERROUILLÃ‰", `${member.user.tag} rejoint pendant le lockdown â†’ timeout ${minutes} min`, 0xe67e22);
     return;
   }
 
@@ -601,11 +601,11 @@ async function onMemberAdd(member) {
   if (joinCount >= config.thresholds.joinRush && config.thresholds.joinRush > 0) {
     const accountAge = (now() - member.user.createdTimestamp) / 86_400_000;
     if (accountAge < config.thresholds.newAccountDays) {
-      await member.timeout(config.punishments.timeoutMinutes * 60_000, "RaidShield — rafle de nouveaux comptes").catch(() => null);
+      await member.timeout(config.punishments.timeoutMinutes * 60_000, "RaidShield â€” rafle de nouveaux comptes").catch(() => null);
       await logAlert(
         guild,
-        "🚨 RAFLE DE NOUVEAUX COMPTES",
-        `**${joinCount} membres** en ${config.thresholds.actionWindow / 1000}s, compte âgé de **${Math.floor(accountAge)}j** → timeout.`,
+        "ðŸš¨ RAFLE DE NOUVEAUX COMPTES",
+        `**${joinCount} membres** en ${config.thresholds.actionWindow / 1000}s, compte Ã¢gÃ© de **${Math.floor(accountAge)}j** â†’ timeout.`,
         0xdb2a2a
       );
     }
@@ -629,14 +629,14 @@ async function onMemberUpdate(oldMember, newMember) {
 
   for (const role of added.values()) {
     if (roleNeedsProtection(role, config)) {
-      await newMember.roles.remove(role.id, "RaidShield — attribution d'un rôle sensible annulée").catch(() => null);
+      await newMember.roles.remove(role.id, "RaidShield â€” attribution d'un rÃ´le sensible annulÃ©e").catch(() => null);
       await logAlert(
         guild,
-        "🛡️ RÔLE SENSIBLE ATTRIBUÉ",
-        `**${role.name}** retiré de ${newMember.user.tag}, fautif : ${executor ?? "inconnu"}`,
+        "ðŸ›¡ï¸ RÃ”LE SENSIBLE ATTRIBUÃ‰",
+        `**${role.name}** retirÃ© de ${newMember.user.tag}, fautif : ${executor ?? "inconnu"}`,
         0xdb2a2a
       );
-      if (executor && !isStaff(executor)) await punish(await guild.members.fetch(executor.id).catch(() => null), config.punishments.default, "Attribution d'un rôle sensible");
+      if (executor && !isStaff(executor)) await punish(await guild.members.fetch(executor.id).catch(() => null), config.punishments.default, "Attribution d'un rÃ´le sensible");
     }
   }
 }
@@ -655,11 +655,11 @@ async function spamPunish(member, config, reason) {
   const s = spamState(member.guild.id, member.id);
   s.strikes = (s.strikes || 0) + 1;
   if (s.strikes >= 3) {
-    await punish(member, "kick", `Anti-spam (3e infraction) — ${reason}`);
+    await punish(member, "kick", `Anti-spam (3e infraction) â€” ${reason}`);
   } else if (s.strikes >= 2) {
-    await punish(member, "timeout", `Anti-spam (2e infraction) — ${reason}`, 60);
+    await punish(member, "timeout", `Anti-spam (2e infraction) â€” ${reason}`, 60);
   } else {
-    await punish(member, "timeout", `Anti-spam — ${reason}`, 10);
+    await punish(member, "timeout", `Anti-spam â€” ${reason}`, 10);
   }
 }
 
@@ -674,7 +674,7 @@ async function onMessage(message) {
   // Anti @everyone / @here
   if (config.spam.everyone && (message.content.includes("@everyone") || message.content.includes("@here"))) {
     await message.delete().catch(() => null);
-    await log(guild, "🚫 @EVERYONE BLOQUÉ", `${member?.user.tag} a tenté d'utiliser @everyone/@here`, 0xe8590c);
+    await log(guild, "ðŸš« @EVERYONE BLOQUÃ‰", `${member?.user.tag} a tentÃ© d'utiliser @everyone/@here`, 0xe8590c);
     await spamPunish(member, config, "@everyone/@here");
     return;
   }
@@ -682,7 +682,7 @@ async function onMessage(message) {
   // Anti invitations Discord
   if (config.spam.invites && /(discord\.(gg|io|me|li)\/\S+|discord(app)?\.com\/invite\/\S+)/i.test(message.content)) {
     await message.delete().catch(() => null);
-    await log(guild, "🚫 INVITATION BLOQUÉE", `${member?.user.tag} a posté une invitation Discord`, 0xe8590c);
+    await log(guild, "ðŸš« INVITATION BLOQUÃ‰E", `${member?.user.tag} a postÃ© une invitation Discord`, 0xe8590c);
     await spamPunish(member, config, "invitation Discord");
     return;
   }
@@ -697,7 +697,7 @@ async function onMessage(message) {
     return;
   }
 
-  // Fenêtre anti-spam / anti-doublon
+  // FenÃªtre anti-spam / anti-doublon
   const s = spamState(guild.id, message.author.id);
   prune(s.times, 5_000);
   s.times.push(now());
@@ -742,74 +742,74 @@ const badge = (guild) => {
   };
 };
 
-const PERM_REF = "Les administrateurs, les whitelistés et RaidShield lui-même ne sont jamais punis.";
+const PERM_REF = "Les administrateurs, les whitelistÃ©s et RaidShield lui-mÃªme ne sont jamais punis.";
 
 const commands = [
   new SlashCommandBuilder()
     .setName("raid")
-    .setDescription("Centre de contrôle anti-raid (statut, lockdown, config)")
-    .addSubcommand((s) => s.setName("status").setDescription("État actuel de la protection"))
+    .setDescription("Centre de contrÃ´le anti-raid (statut, lockdown, config)")
+    .addSubcommand((s) => s.setName("status").setDescription("Ã‰tat actuel de la protection"))
     .addSubcommand((s) =>
       s.setName("lockdown").setDescription("Verrouille le serveur : les nouveaux arrivants sont mis en timeout")
-        .addIntegerOption((o) => o.setName("minutes").setDescription("Durée en minutes (défaut 60)").setMinValue(1).setMaxValue(1440)))
-    .addSubcommand((s) => s.setName("unlock").setDescription("Lève le lockdown et le mode raid"))
+        .addIntegerOption((o) => o.setName("minutes").setDescription("DurÃ©e en minutes (dÃ©faut 60)").setMinValue(1).setMaxValue(1440)))
+    .addSubcommand((s) => s.setName("unlock").setDescription("LÃ¨ve le lockdown et le mode raid"))
     .addSubcommand((s) =>
       s.setName("config").setDescription("Ajuste un seuil de protection")
         .addStringOption((o) =>
-          o.setName("cle").setDescription("Clé de configuration").setRequired(true)
+          o.setName("cle").setDescription("ClÃ© de configuration").setRequired(true)
             .addChoices(
-              { name: "Seuil : salons créés (10s)", value: "channelCreate" },
-              { name: "Seuil : salons supprimés (10s)", value: "channelDelete" },
-              { name: "Seuil : rôles créés (10s)", value: "roleCreate" },
-              { name: "Seuil : rôles supprimés (10s)", value: "roleDelete" },
+              { name: "Seuil : salons crÃ©Ã©s (10s)", value: "channelCreate" },
+              { name: "Seuil : salons supprimÃ©s (10s)", value: "channelDelete" },
+              { name: "Seuil : rÃ´les crÃ©Ã©s (10s)", value: "roleCreate" },
+              { name: "Seuil : rÃ´les supprimÃ©s (10s)", value: "roleDelete" },
               { name: "Seuil : bans (10s)", value: "ban" },
               { name: "Seuil : kicks (10s)", value: "kick" },
               { name: "Anti-spam : messages / 5s", value: "spam" },
               { name: "Anti-spam : doublons / 5s", value: "duplicate" },
               { name: "Seuil : rafle de connexions (10s)", value: "joinRush" },
-              { name: "Suspect : âge du compte (jours)", value: "newAccountDays" },
-              { name: "Seuil : bots ajoutés (30s)", value: "botAdd" },
-              { name: "Fenêtre de détection (ms)", value: "actionWindow" },
-              { name: "Punition par défaut (timeout/kick/ban)", value: "punishDefault" },
-              { name: "Durée du timeout (minutes)", value: "timeoutMinutes" },
+              { name: "Suspect : Ã¢ge du compte (jours)", value: "newAccountDays" },
+              { name: "Seuil : bots ajoutÃ©s (30s)", value: "botAdd" },
+              { name: "FenÃªtre de dÃ©tection (ms)", value: "actionWindow" },
+              { name: "Punition par dÃ©faut (timeout/kick/ban)", value: "punishDefault" },
+              { name: "DurÃ©e du timeout (minutes)", value: "timeoutMinutes" },
               { name: "Punition anti-nuke (timeout/kick/ban)", value: "nukePunish" },
             ))
         .addStringOption((o) => o.setName("valeur").setDescription("Nouvelle valeur").setRequired(true)))
     .addSubcommand((s) =>
-      s.setName("punish").setDescription("Punition par défaut pour un spammeur")
+      s.setName("punish").setDescription("Punition par dÃ©faut pour un spammeur")
         .addStringOption((o) =>
           o.setName("mode").setDescription("timeout, kick ou ban").setRequired(true)
             .addChoices(
-              { name: "timeout (recommandé)", value: "timeout" },
+              { name: "timeout (recommandÃ©)", value: "timeout" },
               { name: "kick", value: "kick" },
               { name: "ban", value: "ban" }))),
   new SlashCommandBuilder()
     .setName("whitelist")
-    .setDescription("Gère la liste des membres/rôles jamais punis par RaidShield")
-    .addSubcommand((s) => s.setName("add").setDescription("Ajoute un membre à la whitelist").addUserOption((o) => o.setName("user").setDescription("Membre").setRequired(true)))
+    .setDescription("GÃ¨re la liste des membres/rÃ´les jamais punis par RaidShield")
+    .addSubcommand((s) => s.setName("add").setDescription("Ajoute un membre Ã  la whitelist").addUserOption((o) => o.setName("user").setDescription("Membre").setRequired(true)))
     .addSubcommand((s) => s.setName("remove").setDescription("Retire un membre de la whitelist").addUserOption((o) => o.setName("user").setDescription("Membre").setRequired(true)))
-    .addSubcommand((s) => s.setName("list").setDescription("Liste les membres whitelistés"))
-    .addSubcommand((s) => s.setName("role").setDescription("Ajoute un rôle à la whitelist").addRoleOption((o) => o.setName("role").setDescription("Rôle").setRequired(true)))
-    .addSubcommand((s) => s.setName("roledel").setDescription("Retire un rôle de la whitelist").addRoleOption((o) => o.setName("role").setDescription("Rôle").setRequired(true))),
+    .addSubcommand((s) => s.setName("list").setDescription("Liste les membres whitelistÃ©s"))
+    .addSubcommand((s) => s.setName("role").setDescription("Ajoute un rÃ´le Ã  la whitelist").addRoleOption((o) => o.setName("role").setDescription("RÃ´le").setRequired(true)))
+    .addSubcommand((s) => s.setName("roledel").setDescription("Retire un rÃ´le de la whitelist").addRoleOption((o) => o.setName("role").setDescription("RÃ´le").setRequired(true))),
   new SlashCommandBuilder()
     .setName("protected")
-    .setDescription("Rôles protégés : toute modif non-staff sera annulée")
-    .addSubcommand((s) => s.setName("add").setDescription("Protège un rôle").addRoleOption((o) => o.setName("role").setDescription("Rôle").setRequired(true)))
-    .addSubcommand((s) => s.setName("remove").setDescription("Retire la protection d'un rôle").addRoleOption((o) => o.setName("role").setDescription("Rôle").setRequired(true)))
-    .addSubcommand((s) => s.setName("list").setDescription("Liste les rôles protégés")),
+    .setDescription("RÃ´les protÃ©gÃ©s : toute modif non-staff sera annulÃ©e")
+    .addSubcommand((s) => s.setName("add").setDescription("ProtÃ¨ge un rÃ´le").addRoleOption((o) => o.setName("role").setDescription("RÃ´le").setRequired(true)))
+    .addSubcommand((s) => s.setName("remove").setDescription("Retire la protection d'un rÃ´le").addRoleOption((o) => o.setName("role").setDescription("RÃ´le").setRequired(true)))
+    .addSubcommand((s) => s.setName("list").setDescription("Liste les rÃ´les protÃ©gÃ©s")),
   new SlashCommandBuilder()
     .setName("logs")
     .setDescription("Configure le salon de journalisation")
-    .addSubcommand((s) => s.setName("set").setDescription("Salon où sont envoyés les logs").addChannelOption((o) => o.setName("salon").setDescription("Salon de logs").setRequired(true)))
-    .addSubcommand((s) => s.setName("unset").setDescription("Supprime le salon de logs configuré")),
+    .addSubcommand((s) => s.setName("set").setDescription("Salon oÃ¹ sont envoyÃ©s les logs").addChannelOption((o) => o.setName("salon").setDescription("Salon de logs").setRequired(true)))
+    .addSubcommand((s) => s.setName("unset").setDescription("Supprime le salon de logs configurÃ©")),
   new SlashCommandBuilder()
     .setName("qrole")
-    .setDescription("Définit le rôle de quarantaine appliqué pendant un raid")
-    .addStringOption((o) => o.setName("role").setDescription("ID du rôle, ou 'aucun'").setRequired(true)),
+    .setDescription("DÃ©finit le rÃ´le de quarantaine appliquÃ© pendant un raid")
+    .addStringOption((o) => o.setName("role").setDescription("ID du rÃ´le, ou 'aucun'").setRequired(true)),
   new SlashCommandBuilder()
     .setName("avis")
-    .setDescription("Laisse un avis sur le serveur (note de 1 à 5 étoiles)")
-    .addIntegerOption((o) => o.setName("note").setDescription("Note de 1 à 5 étoiles").setRequired(true).setMinValue(1).setMaxValue(5))
+    .setDescription("Laisse un avis sur le serveur (note de 1 Ã  5 Ã©toiles)")
+    .addIntegerOption((o) => o.setName("note").setDescription("Note de 1 Ã  5 Ã©toiles").setRequired(true).setMinValue(1).setMaxValue(5))
     .addStringOption((o) => o.setName("message").setDescription("Ton message (facultatif)").setMaxLength(300)),
 ];
 
@@ -822,7 +822,7 @@ async function handleInteraction(interaction) {
     const member = interaction.member;
     const ok = member.permissions.has(PermissionsBitField.Flags.ManageGuild) || isWhitelisted(member, config);
     if (!ok) {
-      await interaction.reply({ content: "❌ Tu as besoin de la permission **Gérer le serveur** pour cette commande.", ephemeral: true });
+      await interaction.reply({ content: "âŒ Tu as besoin de la permission **GÃ©rer le serveur** pour cette commande.", ephemeral: true });
       return false;
     }
     return true;
@@ -837,24 +837,24 @@ async function handleInteraction(interaction) {
     if (sub === "status") {
       const th = config.thresholds;
       const parts = [
-        `🛡️ **État** : ${config.enabled ? "actif" : "désactivé"}`,
-        `🚨 **Mode RAID** : ${config.raidMode ? "ACTIF jusqu'à <t:" + Math.floor(config.raidModeUntil / 1000) + ":T>" : "inactif"}`,
-        `🔒 **Lockdown** : ${config.lockdown ? "ACTIF jusqu'à <t:" + Math.floor(config.lockdownUntil / 1000) + ":T>" : "inactif"}`,
+        `ðŸ›¡ï¸ **Ã‰tat** : ${config.enabled ? "actif" : "dÃ©sactivÃ©"}`,
+        `ðŸš¨ **Mode RAID** : ${config.raidMode ? "ACTIF jusqu'Ã  <t:" + Math.floor(config.raidModeUntil / 1000) + ":T>" : "inactif"}`,
+        `ðŸ”’ **Lockdown** : ${config.lockdown ? "ACTIF jusqu'Ã  <t:" + Math.floor(config.lockdownUntil / 1000) + ":T>" : "inactif"}`,
         ``,
-        `📊 **Seuils (fenêtre ${(th.actionWindow / 1000).toFixed(0)}s)** :`,
-        `     Salons créés  → ${th.channelCreate}`,
-        `     Salons suppr. → ${th.channelDelete}`,
-        `     Rôles créés   → ${th.roleCreate}`,
-        `     Rôles suppr.  → ${th.roleDelete}`,
-        `     Bans  → ${th.ban}   Kicks → ${th.kick}`,
-        `     Connexions → ${th.joinRush}   Bots ajoutés → ${th.botAdd}`,
-        `     Anti-spam  → ${th.spam} msg / 5s   Doublons → ${th.duplicate}`,
-        `     Compte suspect → < ${th.newAccountDays} jours`,
+        `ðŸ“Š **Seuils (fenÃªtre ${(th.actionWindow / 1000).toFixed(0)}s)** :`,
+        `     Salons crÃ©Ã©s  â†’ ${th.channelCreate}`,
+        `     Salons suppr. â†’ ${th.channelDelete}`,
+        `     RÃ´les crÃ©Ã©s   â†’ ${th.roleCreate}`,
+        `     RÃ´les suppr.  â†’ ${th.roleDelete}`,
+        `     Bans  â†’ ${th.ban}   Kicks â†’ ${th.kick}`,
+        `     Connexions â†’ ${th.joinRush}   Bots ajoutÃ©s â†’ ${th.botAdd}`,
+        `     Anti-spam  â†’ ${th.spam} msg / 5s   Doublons â†’ ${th.duplicate}`,
+        `     Compte suspect â†’ < ${th.newAccountDays} jours`,
         ``,
-        `⚖️ **Punitions** : défaut = \`${config.punishments.default}\`, nuke = \`${config.punishments.nuke}\`, timeout = ${config.punishments.timeoutMinutes} min`,
-        `🛡️ **Whitelist** : ${config.whitelistUsers.length} membres, ${config.whitelistRoles.length} rôles`,
-        `🔐 **Rôles protégés** : ${config.protectedRoles.length}`,
-        `📢 **Salon de logs** : ${config.logChannel ? `<#${config.logChannel}>` : "automatique"}`,
+        `âš–ï¸ **Punitions** : dÃ©faut = \`${config.punishments.default}\`, nuke = \`${config.punishments.nuke}\`, timeout = ${config.punishments.timeoutMinutes} min`,
+        `ðŸ›¡ï¸ **Whitelist** : ${config.whitelistUsers.length} membres, ${config.whitelistRoles.length} rÃ´les`,
+        `ðŸ” **RÃ´les protÃ©gÃ©s** : ${config.protectedRoles.length}`,
+        `ðŸ“¢ **Salon de logs** : ${config.logChannel ? `<#${config.logChannel}>` : "automatique"}`,
       ];
       return reply(parts.join("\n"));
     }
@@ -862,36 +862,36 @@ async function handleInteraction(interaction) {
     if (sub === "lockdown") {
       const minutes = interaction.options.getInteger("minutes") ?? 60;
       await setLockdown(guild, minutes, true);
-      return reply(`🔒 Lockdown démarré pour ${minutes} min. Les nouveaux arrivants seront mis en timeout automatiquement.`);
+      return reply(`ðŸ”’ Lockdown dÃ©marrÃ© pour ${minutes} min. Les nouveaux arrivants seront mis en timeout automatiquement.`);
     }
 
     if (sub === "unlock") {
       disableRaidMode(guild);
-      return reply("🔓 Protection désactivée. L'accès est de nouveau normal.");
+      return reply("ðŸ”“ Protection dÃ©sactivÃ©e. L'accÃ¨s est de nouveau normal.");
     }
 
     if (sub === "config") {
       const key = interaction.options.getString("cle");
       const raw = interaction.options.getString("valeur").trim();
       if (key === "punishDefault" || key === "nukePunish") {
-        if (!["timeout", "kick", "ban"].includes(raw)) return reply("❌ Valeur invalide (timeout, kick, ban).");
+        if (!["timeout", "kick", "ban"].includes(raw)) return reply("âŒ Valeur invalide (timeout, kick, ban).");
         config.punishments[key === "punishDefault" ? "default" : "nuke"] = raw;
       } else if (key === "timeoutMinutes") {
         config.punishments.timeoutMinutes = Math.max(1, Math.min(1440, parseInt(raw) || 60));
       } else {
         const n = parseInt(raw);
-        if (Number.isNaN(n) || n < 0) return reply("❌ Valeur numérique invalide.");
+        if (Number.isNaN(n) || n < 0) return reply("âŒ Valeur numÃ©rique invalide.");
         config.thresholds[key] = n;
       }
       saveConfigs();
-      return reply(`✅ \`${key}\` mis à jour → **${raw}**`);
+      return reply(`âœ… \`${key}\` mis Ã  jour â†’ **${raw}**`);
     }
 
     if (sub === "punish") {
       const mode = interaction.options.getString("mode");
       config.punishments.default = mode;
       saveConfigs();
-      return reply(`✅ Punition par défaut → **${mode}**`);
+      return reply(`âœ… Punition par dÃ©faut â†’ **${mode}**`);
     }
   }
 
@@ -902,30 +902,30 @@ async function handleInteraction(interaction) {
       const u = interaction.options.getUser("user");
       if (!config.whitelistUsers.includes(u.id)) config.whitelistUsers.push(u.id);
       saveConfigs();
-      return reply(`✅ ${u.tag} ajouté à la whitelist.`);
+      return reply(`âœ… ${u.tag} ajoutÃ© Ã  la whitelist.`);
     }
     if (sub === "remove") {
       const u = interaction.options.getUser("user");
       config.whitelistUsers = config.whitelistUsers.filter((id) => id !== u.id);
       saveConfigs();
-      return reply(`✅ ${u.tag} retiré de la whitelist.`);
+      return reply(`âœ… ${u.tag} retirÃ© de la whitelist.`);
     }
     if (sub === "list") {
       const names = config.whitelistUsers.map((id) => `<@${id}>`).join(", ") || "Aucun";
       const roles = config.whitelistRoles.map((id) => `<@&${id}>`).join(", ") || "Aucun";
-      return reply(`🛡️ **Membres** : ${names}\n🛡️ **Rôles** : ${roles}`);
+      return reply(`ðŸ›¡ï¸ **Membres** : ${names}\nðŸ›¡ï¸ **RÃ´les** : ${roles}`);
     }
     if (sub === "role") {
       const r = interaction.options.getRole("role");
       if (!config.whitelistRoles.includes(r.id)) config.whitelistRoles.push(r.id);
       saveConfigs();
-      return reply(`✅ Rôle <@&${r.id}> whitelisté.`);
+      return reply(`âœ… RÃ´le <@&${r.id}> whitelistÃ©.`);
     }
     if (sub === "roledel") {
       const r = interaction.options.getRole("role");
       config.whitelistRoles = config.whitelistRoles.filter((id) => id !== r.id);
       saveConfigs();
-      return reply(`✅ Rôle <@&${r.id}> retiré de la whitelist.`);
+      return reply(`âœ… RÃ´le <@&${r.id}> retirÃ© de la whitelist.`);
     }
   }
 
@@ -936,17 +936,17 @@ async function handleInteraction(interaction) {
       const r = interaction.options.getRole("role");
       if (!config.protectedRoles.includes(r.id)) config.protectedRoles.push(r.id);
       saveConfigs();
-      return reply(`🔐 Rôle <@&${r.id}> protégé : toute modif non-staff sera annulée.`);
+      return reply(`ðŸ” RÃ´le <@&${r.id}> protÃ©gÃ© : toute modif non-staff sera annulÃ©e.`);
     }
     if (sub === "remove") {
       const r = interaction.options.getRole("role");
       config.protectedRoles = config.protectedRoles.filter((id) => id !== r.id);
       saveConfigs();
-      return reply(`🔓 Rôle <@&${r.id}> n'est plus protégé.`);
+      return reply(`ðŸ”“ RÃ´le <@&${r.id}> n'est plus protÃ©gÃ©.`);
     }
     if (sub === "list") {
       const roles = config.protectedRoles.map((id) => `<@&${id}>`).join(", ") || "Aucun";
-      return reply(`🔐 **Rôles protégés** : ${roles}`);
+      return reply(`ðŸ” **RÃ´les protÃ©gÃ©s** : ${roles}`);
     }
   }
 
@@ -957,12 +957,12 @@ async function handleInteraction(interaction) {
       const ch = interaction.options.getChannel("salon");
       config.logChannel = ch.id;
       saveConfigs();
-      return reply(`📢 Logs → <#${ch.id}>`);
+      return reply(`ðŸ“¢ Logs â†’ <#${ch.id}>`);
     }
     if (sub === "unset") {
       config.logChannel = null;
       saveConfigs();
-      return reply("📢 Salon de logs défini sur **automatique** (recherche d'un salon 'logs').");
+      return reply("ðŸ“¢ Salon de logs dÃ©fini sur **automatique** (recherche d'un salon 'logs').");
     }
   }
 
@@ -972,13 +972,13 @@ async function handleInteraction(interaction) {
     if (/^(aucun|none|null)$/i.test(raw)) {
       config.quarantineRole = null;
       saveConfigs();
-      return reply("✅ Rôle de quarantaine désactivé.");
+      return reply("âœ… RÃ´le de quarantaine dÃ©sactivÃ©.");
     }
     const role = await guild.roles.fetch(raw).catch(() => null);
-    if (!role) return reply("❌ Rôle introuvable. Donne l'**ID** du rôle (Paramètres du rôle → clic droit).");
+    if (!role) return reply("âŒ RÃ´le introuvable. Donne l'**ID** du rÃ´le (ParamÃ¨tres du rÃ´le â†’ clic droit).");
     config.quarantineRole = role.id;
     saveConfigs();
-    return reply(`✅ Rôle de quarantaine : <@&${role.id}>`);
+    return reply(`âœ… RÃ´le de quarantaine : <@&${role.id}>`);
   }
 
   if (interaction.commandName === "avis") {
@@ -988,26 +988,26 @@ async function handleInteraction(interaction) {
     const last = avisCooldowns.get(interaction.user.id) || 0;
     const wait = 60_000 - (now() - last);
     if (wait > 0) {
-      return reply(`⏳ Tu as déjà laissé un avis il y a moins d'une minute. Réessaie dans ${Math.ceil(wait / 1000)}s.`);
+      return reply(`â³ Tu as dÃ©jÃ  laissÃ© un avis il y a moins d'une minute. RÃ©essaie dans ${Math.ceil(wait / 1000)}s.`);
     }
     avisCooldowns.set(interaction.user.id, now());
 
-    const stars = "⭐".repeat(note) + "☆".repeat(5 - note);
+    const stars = "â­".repeat(note) + "â˜†".repeat(5 - note);
     const channel = guild.channels.cache.get(REVIEW_CHANNEL_ID);
     if (!channel || !channel.isTextBased()) {
-      return reply("❌ Le salon des avis est introuvable. Signale-le à un admin.");
+      return reply("âŒ Le salon des avis est introuvable. Signale-le Ã  un admin.");
     }
     const embed = new EmbedBuilder()
-      .setTitle("⭐ Nouvel avis sur EASY TUNING")
+      .setTitle("â­ Nouvel avis sur EASY TUNING")
       .setDescription(
         `**Note :** ${stars} (${note}/5)\n` +
         `**Laisse par :** ${interaction.user.tag}\n` +
-        (msg ? `**Message :** *“${msg}”*` : "")
+        (msg ? `**Message :** *â€œ${msg}â€*` : "")
       )
       .setColor(0xf1c40f)
       .setTimestamp();
     await channel.send({ content: `${interaction.member}`, embeds: [embed] });
-    return reply(`✅ Merci pour ton avis ! (${stars} — ${note}/5) Il a été posté dans <#${REVIEW_CHANNEL_ID}>.`);
+    return reply(`âœ… Merci pour ton avis ! (${stars} â€” ${note}/5) Il a Ã©tÃ© postÃ© dans <#${REVIEW_CHANNEL_ID}>.`);
   }
 }
 
@@ -1025,8 +1025,9 @@ const getToken = () => process.env.TOKEN || process.env.DISCORD_TOKEN || "";
 let client = null;
 let degraded = false;
 let readyFlag = false;
+let loginState = { at: 0, ok: false, error: null };
 
-// Keepalive HTTP pour les hébergeurs qui mettent en veille les services
+// Keepalive HTTP pour les hÃ©bergeurs qui mettent en veille les services
 // inactifs (Render, Glitch, etc.). S'active automatiquement s'ils le demandent.
 if (process.env.PORT) {
   const server = http.createServer((req, res) => {
@@ -1036,6 +1037,8 @@ if (process.env.PORT) {
         connected: Boolean(readyFlag),
         degraded,
         guilds: client?.guilds?.cache?.size ?? 0,
+        wsStatus: client?.ws?.status ?? null,
+        login: loginState,
         uptime: Math.floor(process.uptime()),
       });
       res.writeHead(200, { "content-type": "application/json" });
@@ -1066,41 +1069,43 @@ const DEGRADED_INTENTS = [
 function setupEvents(bot) {
   bot.once(Events.ClientReady, async (c) => {
     readyFlag = true;
-    console.log(`[RaidShield] Connecté en tant que ${c.user.tag} (${c.user.id})${degraded ? " — MODE DÉGRADÉ" : ""}`);
-    c.user.setActivity("🛡️ Anti-raid premium", { type: ActivityType.Watching });
+    loginState.ok = true;
+    loginState.error = null;
+    console.log(`[RaidShield] ConnectÃ© en tant que ${c.user.tag} (${c.user.id})${degraded ? " â€” MODE DÃ‰GRADÃ‰" : ""}`);
+    c.user.setActivity("ðŸ›¡ï¸ Anti-raid premium", { type: ActivityType.Watching });
 
     if (degraded) {
       console.warn(
-        "[RaidShield] ⚠️ MODE DÉGRADÉ : les intents privilégiés sont désactivés sur le portail dev.\n" +
-          "    Actifs : anti-nuke salons/rôles/bans via audit logs, lockdown manuel.\n" +
-          "    Inactifs : anti-spam par contenu, anti-massjoin, protection rôles par audit,\n" +
+        "[RaidShield] âš ï¸ MODE DÃ‰GRADÃ‰ : les intents privilÃ©giÃ©s sont dÃ©sactivÃ©s sur le portail dev.\n" +
+          "    Actifs : anti-nuke salons/rÃ´les/bans via audit logs, lockdown manuel.\n" +
+          "    Inactifs : anti-spam par contenu, anti-massjoin, protection rÃ´les par audit,\n" +
           "    anti-kick et anti-bots. Active les intents puis relance le bot."
       );
     }
 
-    // Déploiement des commandes slash sur le(s) serveur(s)
+    // DÃ©ploiement des commandes slash sur le(s) serveur(s)
     const guildId = process.env.GUILD_ID;
     const targetGuild = guildId ? c.guilds.cache.get(guildId) : c.guilds.cache.first();
     if (targetGuild) {
       await targetGuild.commands.set(commands);
-      console.log(`[RaidShield] ${commands.length} commandes déployées sur ${targetGuild.name}`);
+      console.log(`[RaidShield] ${commands.length} commandes dÃ©ployÃ©es sur ${targetGuild.name}`);
       await log(
         targetGuild,
-        degraded ? "🛡️ RAID SHIELD DÉMARRÉ (mode dégradé)" : "🛡️ RAID SHIELD DÉMARRÉ",
+        degraded ? "ðŸ›¡ï¸ RAID SHIELD DÃ‰MARRÃ‰ (mode dÃ©gradÃ©)" : "ðŸ›¡ï¸ RAID SHIELD DÃ‰MARRÃ‰",
         degraded
-          ? "⚠️ **MODE DÉGRADÉ** : active les intents privilégiés dans le portail dev pour la protection complète.\nTape **/raid status** pour voir l'état, **/raid lockdown** pour verrouiller le serveur."
-          : "Protection active. Tape **/raid status** pour voir l'état, **/raid lockdown** pour verrouiller le serveur.",
+          ? "âš ï¸ **MODE DÃ‰GRADÃ‰** : active les intents privilÃ©giÃ©s dans le portail dev pour la protection complÃ¨te.\nTape **/raid status** pour voir l'Ã©tat, **/raid lockdown** pour verrouiller le serveur."
+          : "Protection active. Tape **/raid status** pour voir l'Ã©tat, **/raid lockdown** pour verrouiller le serveur.",
         degraded ? 0xe8590c : 0x5865f2
       );
     } else {
-      console.warn("[RaidShield] Aucun serveur détecté — invite le bot sur un serveur.");
+      console.warn("[RaidShield] Aucun serveur dÃ©tectÃ© â€” invite le bot sur un serveur.");
     }
   });
 
   bot.on(Events.GuildCreate, async (guild) => {
     await guild.commands.set(commands).catch(() => null);
-    console.log(`[RaidShield] Rejoint ${guild.name} — commandes déployées.`);
-    await log(guild, "🛡️ RAID SHIELD DÉMARRÉ", "Protection active. Tape **/raid status** pour voir l'état.", 0x5865f2);
+    console.log(`[RaidShield] Rejoint ${guild.name} â€” commandes dÃ©ployÃ©es.`);
+    await log(guild, "ðŸ›¡ï¸ RAID SHIELD DÃ‰MARRÃ‰", "Protection active. Tape **/raid status** pour voir l'Ã©tat.", 0x5865f2);
   });
 
   bot.on(Events.GuildMemberAdd, onMemberAdd);
@@ -1113,7 +1118,7 @@ function setupEvents(bot) {
   bot.on(Events.GuildBanAdd, onBanAdd);
   bot.on(Events.GuildMemberUpdate, onMemberUpdate);
 
-  // Détection anti-kick : le départ d'un membre déclenche l'audit log si c'est un kick
+  // DÃ©tection anti-kick : le dÃ©part d'un membre dÃ©clenche l'audit log si c'est un kick
   bot.on(Events.GuildMemberRemove, async (member) => {
     if (!member.guild) return;
     const config = configOf(member.guild.id);
@@ -1132,7 +1137,7 @@ function memberGuildFor(guildId) {
   return client?.guilds?.cache?.get(guildId) ?? null;
 }
 
-// Nettoyage périodique des états anti-spam et expiration des verrous
+// Nettoyage pÃ©riodique des Ã©tats anti-spam et expiration des verrous
 setInterval(() => {
   for (const [guildId, st] of states) {
     const config = guildConfigs.get(guildId);
@@ -1159,12 +1164,12 @@ setInterval(() => {
 }, 30_000);
 
 function startDegraded() {
-  console.warn("[RaidShield] Redémarrage en MODE DÉGRADÉ (intents privilégiés désactivés sur le portail).");
+  console.warn("[RaidShield] RedÃ©marrage en MODE DÃ‰GRADÃ‰ (intents privilÃ©giÃ©s dÃ©sactivÃ©s sur le portail).");
   degraded = true;
   client = new Client({ intents: DEGRADED_INTENTS, partials: [Partials.Message, Partials.GuildMember, Partials.User, Partials.Channel] });
   setupEvents(client);
   client.login(getToken()).catch((err) => {
-    console.error("[RaidShield] Échec de connexion même en mode dégradé:", err?.message || err);
+    console.error("[RaidShield] Ã‰chec de connexion mÃªme en mode dÃ©gradÃ©:", err?.message || err);
     process.exit(1);
   });
 }
@@ -1187,11 +1192,11 @@ process.on("uncaughtException", (err) => {
 
 loadConfigs();
 if (!getToken()) {
-  console.error("[RaidShield] TOKEN manquant — définis la variable d'environnement TOKEN (ou DISCORD_TOKEN dans .env) puis relance.");
+  console.error("[RaidShield] TOKEN manquant â€” dÃ©finis la variable d'environnement TOKEN (ou DISCORD_TOKEN dans .env) puis relance.");
   process.exit(1);
 }
 
-// Mode diagnostic (aucune connexion) : valide la sérialisation des commandes
+// Mode diagnostic (aucune connexion) : valide la sÃ©rialisation des commandes
 if (process.env.TEST_SLASH === "1") {
   let bad = 0;
   for (const cmd of commands) {
@@ -1214,14 +1219,15 @@ client.login(getToken()).catch((err) => {
     startDegraded();
     return;
   }
+  loginState.error = String(err?.message || err || "");
   console.error("[RaidShield] Échec de connexion:", err?.message || err);
   process.exit(1);
 });
 
 setTimeout(() => {
   if (!readyFlag) {
-    console.error("[RaidShield] ⚠️ Aucun signal 'prêt' de Discord après 120s — connexion bloquée.");
+    console.error("[RaidShield] âš ï¸ Aucun signal 'prÃªt' de Discord aprÃ¨s 120s â€” connexion bloquÃ©e.");
   } else {
-    console.log("[RaidShield] ✅ Connexion Discord confirmée.");
+    console.log("[RaidShield] âœ… Connexion Discord confirmÃ©e.");
   }
 }, 120_000);
