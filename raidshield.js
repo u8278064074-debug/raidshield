@@ -1049,9 +1049,11 @@ const DEGRADED_INTENTS = [
 
 let client = null;
 let degraded = false;
+let readyFlag = false;
 
 function setupEvents(bot) {
   bot.once(Events.ClientReady, async (c) => {
+    readyFlag = true;
     console.log(`[RaidShield] Connecté en tant que ${c.user.tag} (${c.user.id})${degraded ? " — MODE DÉGRADÉ" : ""}`);
     c.user.setActivity("🛡️ Anti-raid premium", { type: ActivityType.Watching });
 
@@ -1203,3 +1205,11 @@ client.login(getToken()).catch((err) => {
   console.error("[RaidShield] Échec de connexion:", err?.message || err);
   process.exit(1);
 });
+
+setTimeout(() => {
+  if (!readyFlag) {
+    console.error("[RaidShield] ⚠️ Aucun signal 'prêt' de Discord après 120s — connexion bloquée.");
+  } else {
+    console.log("[RaidShield] ✅ Connexion Discord confirmée.");
+  }
+}, 120_000);
