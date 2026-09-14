@@ -1086,6 +1086,13 @@ if (process.env.PORT) {
         net: netRes,
         wsTest: wsRes,
         boot: bootDiag,
+        gwSetup: (() => {
+          try {
+            return { url: client?.ws?.gateway?.url ?? null, hasSet: typeof client?.ws?.setGateway === "function" };
+          } catch {
+            return { url: "?", hasSet: "?" };
+          }
+        })(),
         login: loginState,
         uptime: Math.floor(process.uptime()),
       });
