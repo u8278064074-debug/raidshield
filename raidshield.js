@@ -1228,16 +1228,7 @@ function startDegraded() {
   degraded = true;
   client = new Client({ intents: DEGRADED_INTENTS, partials: [Partials.Message, Partials.GuildMember, Partials.User, Partials.Channel] });
   setupEvents(client);
-bootDiag.loginCalledAt = Math.floor(process.uptime());
-try {
-  if (typeof client.ws?.setGateway === "function" && !client.ws.gateway?.url) {
-    client.ws.setGateway({ url: "wss://gateway.discord.gg", shards: 1, total: 1 });
-    console.log("[RaidShield] Passerelle Discord injectee (contournement API REST).");
-  }
-} catch (e) {
-  console.error("[RaidShield] setGateway:", e?.message || e);
-}
-client.login(getToken()).catch((err) => {
+  client.login(getToken()).catch((err) => {
     console.error("[RaidShield] Ã‰chec de connexion mÃªme en mode dÃ©gradÃ©:", err?.message || err);
     process.exit(1);
   });
@@ -1282,6 +1273,15 @@ if (process.env.TEST_SLASH === "1") {
   process.exit(bad ? 1 : 0);
 }
 
+bootDiag.loginCalledAt = Math.floor(process.uptime());
+try {
+  if (typeof client.ws?.setGateway === "function" && !client.ws.gateway?.url) {
+    client.ws.setGateway({ url: "wss://gateway.discord.gg", shards: 1, total: 1 });
+    console.log("[RaidShield] Passerelle Discord injectee (contournement API REST).");
+  }
+} catch (e) {
+  console.error("[RaidShield] setGateway:", e?.message || e);
+}
 client.login(getToken()).catch((err) => {
   const msg = String(err?.message || err || "");
   if (/disallowed intents/i.test(msg) && !degraded) {
