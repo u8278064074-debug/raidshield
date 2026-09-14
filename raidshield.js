@@ -1051,19 +1051,21 @@ setInterval(async () => {
 }, 60_000);
 
 function testWss() {
-  return new Promise((resolve) => {
-    const keeper = setTimeout(() => resolve({ ok: false, error: "timeout 15s" }), 15000);
-    try {
-      const WS = require("ws");
-      const sock = new WS("wss://gateway.discord.gg?v=10&encoding=json");
-      sock.on("open", () => { clearTimeout(keeper); resolve({ ok: true, error: null }); });
-      sock.on("error", (e) => { clearTimeout(keeper); resolve({ ok: false, error: String(e?.message || e) }); });
-      sock.on("close", (code, reason) => { clearTimeout(keeper); resolve({ ok: false, error: "close " + code + " " + reason }); });
-    } catch (e) {
-      clearTimeout(keeper);
-      resolve({ ok: false, error: String(e?.message || e) });
-    }
-  });
+  return import("ws").then((mod) => {
+    const WS = mod.default;
+    return new Promise((resolve) => {
+      const keeper = setTimeout(() => resolve({ ok: false, error: "timeout 15s" }), 15000);
+      try {
+        const sock = new WS("wss://gateway.discord.gg?v=10&encoding=json");
+        sock.on("open", () => { clearTimeout(keeper); resolve({ ok: true, error: null }); });
+        sock.on("error", (e) => { clearTimeout(keeper); resolve({ ok: false, error: String(e?.message || e) }); });
+        sock.on("close", (code, reason) => { clearTimeout(keeper); resolve({ ok: false, error: "close " + code + " " + String(reason || "") }); });
+      } catch (e) {
+        clearTimeout(keeper);
+        resolve({ ok: false, error: String(e?.message || e) });
+      }
+    });
+  }).catch((e) => ({ ok: false, error: "import ws: " + String(e?.message || e) }));
 }
 setInterval(async () => { wsRes = await testWss(); }, 90_000);
 (async () => { wsRes = await testWss(); })();
