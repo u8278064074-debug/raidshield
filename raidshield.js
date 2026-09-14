@@ -1035,12 +1035,11 @@ async function testNetwork() {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8000);
   try {
-    const res = await fetch("https://discord.com/api/v10/gateway", {
-      headers: { "User-Agent": "DiscordBot (RaidShield, 1.0.0)" },
-      signal: controller.signal,
-    });
+    const hdr = { "User-Agent": "DiscordBot (RaidShield, 1.0.0)" };
+    const resGw = await fetch("https://discord.com/api/v10/gateway", { headers: hdr, signal: controller.signal });
+    const resMe = await fetch("https://discord.com/api/v10/users/@me", { headers: { ...hdr, Authorization: `Bot ${getToken()}` }, signal: controller.signal });
     clearTimeout(timer);
-    return { ok: true, status: res.status };
+    return { ok: resMe.ok || resGw.ok, status: resGw.status, meStatus: resMe.status, tested: true };
   } catch (e) {
     clearTimeout(timer);
     return { ok: false, error: String(e?.message || e) };
