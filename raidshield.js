@@ -1028,6 +1028,7 @@ let readyFlag = false;
 let loginState = { at: 0, ok: false, error: null };
 let wsDiag = { closes: [], errors: [] };
 let netRes = { ok: null, error: null, tested: false };
+let wsRes = { ok: null, error: null };
 
 async function testNetwork() {
   const controller = new AbortController();
@@ -1049,6 +1050,24 @@ setInterval(async () => {
   netRes = { ...r, tested: true };
 }, 60_000);
 
+function testWss() {
+  return new Promise((resolve) => {
+    const keeper = setTimeout(() => resolve({ ok: false, error: "timeout 15s" }), 15000);
+    try {
+      const WS = require("ws");
+      const sock = new WS("wss://gateway.discord.gg?v=10&encoding=json");
+      sock.on("open", () => { clearTimeout(keeper); resolve({ ok: true, error: null }); });
+      sock.on("error", (e) => { clearTimeout(keeper); resolve({ ok: false, error: String(e?.message || e) }); });
+      sock.on("close", (code, reason) => { clearTimeout(keeper); resolve({ ok: false, error: "close " + code + " " + reason }); });
+    } catch (e) {
+      clearTimeout(keeper);
+      resolve({ ok: false, error: String(e?.message || e) });
+    }
+  });
+}
+setInterval(async () => { wsRes = await testWss(); }, 90_000);
+(async () => { wsRes = await testWss(); })();
+
 // Keepalive HTTP pour les hÃ©bergeurs qui mettent en veille les services
 // inactifs (Render, Glitch, etc.). S'active automatiquement s'ils le demandent.
 if (process.env.PORT) {
@@ -1062,6 +1081,7 @@ if (process.env.PORT) {
         wsStatus: client?.ws?.status ?? null,
         ws: wsDiag,
         net: netRes,
+        wsTest: wsRes,
         login: loginState,
         uptime: Math.floor(process.uptime()),
       });
