@@ -1026,6 +1026,7 @@ let client = null;
 let degraded = false;
 let readyFlag = false;
 let loginState = { at: 0, ok: false, error: null };
+let wsDiag = { closes: [], errors: [] };
 
 // Keepalive HTTP pour les hÃ©bergeurs qui mettent en veille les services
 // inactifs (Render, Glitch, etc.). S'active automatiquement s'ils le demandent.
@@ -1038,6 +1039,7 @@ if (process.env.PORT) {
         degraded,
         guilds: client?.guilds?.cache?.size ?? 0,
         wsStatus: client?.ws?.status ?? null,
+        ws: wsDiag,
         login: loginState,
         uptime: Math.floor(process.uptime()),
       });
@@ -1131,6 +1133,18 @@ function setupEvents(bot) {
   });
 
   bot.on(Events.InteractionCreate, handleInteraction);
+
+  bot.on(Events.ShardDisconnect, (closeEvent, id) => {
+    wsDiag.closes.push({ code: closeEvent?.code ?? null, at: Math.floor(process.uptime()) });
+    console.error(`[RaidShield] WebSocket fermé (shard ${id}) — code=${closeEvent?.code}`);
+  });
+  bot.on(Events.ShardError, (err, id) => {
+    wsDiag.errors.push({ error: String(err?.message || err || ""), at: Math.floor(process.uptime()) });
+    console.error(`[RaidShield] WebSocket erreur (shard ${id}) : ${err?.message || err}`);
+  });
+  bot.on(Events.ShardReconnecting, (id) => {
+    console.error(`[RaidShield] WebSocket reconnexion en cours (shard ${id})`);
+  });
 }
 
 function memberGuildFor(guildId) {

@@ -1,0 +1,38 @@
+{
+  "1548789164181561424": {
+    "enabled": true,
+    "logChannel": null,
+    "quarantineRole": null,
+    "lockdown": false,
+    "lockdownUntil": null,
+    "raidMode": false,
+    "raidModeUntil": null,
+    "thresholds": {
+      "channelCreate": 4,
+      "channelDelete": 4,
+      "roleCreate": 3,
+      "roleDelete": 3,
+      "ban": 3,
+      "kick": 4,
+      "spam": 5,
+      "duplicate": 3,
+      "joinRush": 6,
+      "botAdd": 2,
+      "newAccountDays": 3,
+      "actionWindow": 10000
+    },
+    "punishments": {
+      "default": "timeout",
+      "timeoutMinutes": 60,
+      "nuke": "ban"
+    },
+    "spam": {
+      "invites": true,
+      "everyone": true,
+      "maxMentions": 4
+    },
+    "whitelistUsers": [],
+    "whitelistRoles": [],
+    "protectedRoles": []
+  }
+}
