@@ -1027,6 +1027,27 @@ let degraded = false;
 let readyFlag = false;
 let loginState = { at: 0, ok: false, error: null };
 let wsDiag = { closes: [], errors: [] };
+let netRes = { ok: null, error: null, tested: false };
+
+async function testNetwork() {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch("https://discord.com/api/v10/gateway", {
+      headers: { "User-Agent": "DiscordBot (RaidShield, 1.0.0)" },
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    return { ok: true, status: res.status };
+  } catch (e) {
+    clearTimeout(timer);
+    return { ok: false, error: String(e?.message || e) };
+  }
+}
+setInterval(async () => {
+  const r = await testNetwork();
+  netRes = { ...r, tested: true };
+}, 60_000);
 
 // Keepalive HTTP pour les hÃ©bergeurs qui mettent en veille les services
 // inactifs (Render, Glitch, etc.). S'active automatiquement s'ils le demandent.
@@ -1040,6 +1061,7 @@ if (process.env.PORT) {
         guilds: client?.guilds?.cache?.size ?? 0,
         wsStatus: client?.ws?.status ?? null,
         ws: wsDiag,
+        net: netRes,
         login: loginState,
         uptime: Math.floor(process.uptime()),
       });
