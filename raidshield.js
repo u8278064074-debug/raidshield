@@ -1029,6 +1029,7 @@ let loginState = { at: 0, ok: false, error: null };
 let wsDiag = { closes: [], errors: [] };
 let netRes = { ok: null, error: null, tested: false };
 let wsRes = { ok: null, error: null };
+let bootDiag = { srv: true, loginCalledAt: null, uncaught: null, eol: null };
 
 async function testNetwork() {
   const controller = new AbortController();
@@ -1084,6 +1085,7 @@ if (process.env.PORT) {
         ws: wsDiag,
         net: netRes,
         wsTest: wsRes,
+        boot: bootDiag,
         login: loginState,
         uptime: Math.floor(process.uptime()),
       });
@@ -1226,7 +1228,8 @@ function startDegraded() {
   degraded = true;
   client = new Client({ intents: DEGRADED_INTENTS, partials: [Partials.Message, Partials.GuildMember, Partials.User, Partials.Channel] });
   setupEvents(client);
-  client.login(getToken()).catch((err) => {
+bootDiag.loginCalledAt = Math.floor(process.uptime());
+client.login(getToken()).catch((err) => {
     console.error("[RaidShield] Ã‰chec de connexion mÃªme en mode dÃ©gradÃ©:", err?.message || err);
     process.exit(1);
   });
@@ -1245,6 +1248,7 @@ process.on("unhandledRejection", (reason) => {
   console.error("[RaidShield] unhandledRejection:", reason);
 });
 process.on("uncaughtException", (err) => {
+  bootDiag.uncaught = String(err?.stack || err);
   console.error("[RaidShield] uncaughtException:", err);
 });
 
