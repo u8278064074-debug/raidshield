@@ -29,6 +29,8 @@ const CONFIG_PATH = path.join(__dirname, "raidshield-config.json");
 
 const WELCOME_CHANNEL_ID = "1548883819254517780"; // salon de bienvenue
 const CITIZEN_ROLE_ID = "1548792320260972564"; // rôle 👥 Citoyen (auto-attribué aux nouveaux)
+const REVIEW_CHANNEL_ID = "1548887315865149460"; // ⭐-avis (les /avis y sont postés)
+const avisCooldowns = new Map(); // userId -> timestamp du dernier /avis
 
 /* ------------------------------------------------------------------ */
 /*  Configuration par défaut (chaque serveur peut la modifier)         */
@@ -804,6 +806,11 @@ const commands = [
     .setName("qrole")
     .setDescription("Définit le rôle de quarantaine appliqué pendant un raid")
     .addStringOption((o) => o.setName("role").setDescription("ID du rôle, ou 'aucun'").setRequired(true)),
+  new SlashCommandBuilder()
+    .setName("avis")
+    .setDescription("Laisse un avis sur le serveur (note de 1 à 5 étoiles)")
+    .addIntegerOption((o) => o.setName("note").setDescription("Note de 1 à 5 étoiles").setRequired(true).setMinValue(1).setMaxValue(5))
+    .addStringOption((o) => o.setName("message").setDescription("Ton message (facultatif)").setMaxLength(300)),
 ];
 
 async function handleInteraction(interaction) {
@@ -972,6 +979,35 @@ async function handleInteraction(interaction) {
     config.quarantineRole = role.id;
     saveConfigs();
     return reply(`✅ Rôle de quarantaine : <@&${role.id}>`);
+  }
+
+  if (interaction.commandName === "avis") {
+    const note = interaction.options.getInteger("note");
+    const msg = interaction.options.getString("message")?.trim();
+
+    const last = avisCooldowns.get(interaction.user.id) || 0;
+    const wait = 60_000 - (now() - last);
+    if (wait > 0) {
+      return reply(`⏳ Tu as déjà laissé un avis il y a moins d'une minute. Réessaie dans ${Math.ceil(wait / 1000)}s.`);
+    }
+    avisCooldowns.set(interaction.user.id, now());
+
+    const stars = "⭐".repeat(note) + "☆".repeat(5 - note);
+    const channel = guild.channels.cache.get(REVIEW_CHANNEL_ID);
+    if (!channel || !channel.isTextBased()) {
+      return reply("❌ Le salon des avis est introuvable. Signale-le à un admin.");
+    }
+    const embed = new EmbedBuilder()
+      .setTitle("⭐ Nouvel avis sur EASY TUNING")
+      .setDescription(
+        `**Note :** ${stars} (${note}/5)\n` +
+        `**Laisse par :** ${interaction.user.tag}\n` +
+        (msg ? `**Message :** *“${msg}”*` : "")
+      )
+      .setColor(0xf1c40f)
+      .setTimestamp();
+    await channel.send({ content: `${interaction.member}`, embeds: [embed] });
+    return reply(`✅ Merci pour ton avis ! (${stars} — ${note}/5) Il a été posté dans <#${REVIEW_CHANNEL_ID}>.`);
   }
 }
 
