@@ -1,10 +1,10 @@
 {
   "name": "easy-tuning-bot",
   "version": "1.0.0",
-  "description": "Bot de configuration du serveur Discord EASY TUNING",
+  "description": "RaidShield - bot anti-raid premium Discord EASY TUNING",
   "type": "module",
   "scripts": {
-    "start": "node setup.js"
+    "start": "node raidshield.js"
   },
   "dependencies": {
     "discord.js": "^14.16.3",
