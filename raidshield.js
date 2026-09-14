@@ -1022,10 +1022,26 @@ async function handleInteraction(interaction) {
 // Le token vient de Discloud/Render/etc. (TOKEN) ou du .env local (DISCORD_TOKEN)
 const getToken = () => process.env.TOKEN || process.env.DISCORD_TOKEN || "";
 
+let client = null;
+let degraded = false;
+let readyFlag = false;
+
 // Keepalive HTTP pour les hébergeurs qui mettent en veille les services
 // inactifs (Render, Glitch, etc.). S'active automatiquement s'ils le demandent.
 if (process.env.PORT) {
-  const server = http.createServer((_req, res) => {
+  const server = http.createServer((req, res) => {
+    if (req.url === "/status") {
+      const body = JSON.stringify({
+        ok: true,
+        connected: Boolean(readyFlag),
+        degraded,
+        guilds: client?.guilds?.cache?.size ?? 0,
+        uptime: Math.floor(process.uptime()),
+      });
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(body);
+      return;
+    }
     res.writeHead(200, { "content-type": "text/plain" });
     res.end("RaidShield OK");
   });
@@ -1046,10 +1062,6 @@ const DEGRADED_INTENTS = [
   GatewayIntentBits.GuildModeration,
   GatewayIntentBits.GuildMessages,
 ];
-
-let client = null;
-let degraded = false;
-let readyFlag = false;
 
 function setupEvents(bot) {
   bot.once(Events.ClientReady, async (c) => {
